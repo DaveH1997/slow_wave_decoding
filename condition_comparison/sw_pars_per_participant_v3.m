@@ -227,7 +227,7 @@ if ~use_summary_file
                 % If the new occurrence has a lower total condition duration deviation, update the record
                 if participant_data.total_deviation < top10_SWs.(pid).total_deviation
                     top10_SWs.(pid) = participant_data;
-                    fprintf('\Updated data for participant %s with total condition duration deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
+                    fprintf('\nUpdated data for participant %s with total condition duration deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
                 else
                     fprintf('\nDiscarded data for participant %s with total condition duration deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
                 end
