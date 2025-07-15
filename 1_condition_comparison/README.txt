@@ -1,9 +1,9 @@
-###########################################################################################
-Short Description of the Scripts on the Directory 'slow_wave_decoding/condition_comparison'
-###########################################################################################
+#####################################################################################
+Short Description of the Functions/Scripts on the Directory 'local_sleep/figure_1/1c'
+#####################################################################################
 
 ############################################
-Author: David Hof (last updated: 05-04-2025)
+Author: David Hof (last updated: 07-06-2025)
 ############################################
 
 
@@ -39,6 +39,7 @@ Functions:
                               'aggregate_sw_pars_v2', and 'condition_contrast_v2'.
 
 
-Other Scripts:
+Scripts:
 
-– LS_sw_pars_v3(.slurm): Batch script for the entire data analysis pipeline.
+– run_paired_t_test_pipeline: Driver script for the paired t-test pipeline.
+– LS_sw_pars_v3(.slurm): Batch script for the paired t-test pipeline.

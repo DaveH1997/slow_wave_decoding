@@ -20,8 +20,10 @@ function binned_SWs = compile_binned_SWs(summary_file_dir, options)
 % Outputs:
 %   binned_SWs (struct)
 %       A struct with participant IDs as fields, each containing:
-%         .bin_matrix_movie (64 x n_bins)
-%         .bin_matrix_phone (64 x n_bins)
+%         .bin_matrix_movie_sw (64 x n_bins)
+%         .bin_matrix_phone_sw (64 x n_bins)
+%         .bin_matrix_movie_taps (1 x n_bins)
+%         .bin_matrix_phone_taps (1 x n_bins)
 %
 % Requirements:
 %   - The function 'create_binned_data.m' (which requires 'bin_size_ms' and 'decay_rate')
@@ -31,6 +33,7 @@ function binned_SWs = compile_binned_SWs(summary_file_dir, options)
         summary_file_dir char
         options.bin_size_ms (1,1) double = 100
         options.decay_rate (1,1) double = 0.95
+        options.break_threshold_s (1,1) double = 60
     end
 
     % Prepare storage struct for binned data
@@ -57,20 +60,24 @@ function binned_SWs = compile_binned_SWs(summary_file_dir, options)
             
         % Extract fields needed for create_binned_data
         top10_filtered_results = participant_data.top10_filtered_results;
+        taps = participant_data.taps;
         movie_start = participant_data.movie_start;
         movie_end   = participant_data.movie_end;
         phone_start = participant_data.phone_start;
         phone_end   = participant_data.phone_end;
 
-        [bin_matrix_movie, bin_matrix_phone] = create_binned_data( ...
-            top10_filtered_results, ...
+        [bin_matrix_movie_sw, bin_matrix_phone_sw, bin_matrix_movie_taps, bin_matrix_phone_taps] = create_binned_data( ...
+            top10_filtered_results, taps, ...
             movie_start, movie_end, ...
             phone_start, phone_end, ...
             options.bin_size_ms, ...
-            options.decay_rate);
+            options.decay_rate, ...
+            options.break_threshold_s);
 
-        binned_SWs.(participant_id).bin_matrix_movie = bin_matrix_movie;
-        binned_SWs.(participant_id).bin_matrix_phone = bin_matrix_phone;
+        binned_SWs.(participant_id).bin_matrix_movie_sw = bin_matrix_movie_sw;
+        binned_SWs.(participant_id).bin_matrix_phone_sw = bin_matrix_phone_sw;
+        binned_SWs.(participant_id).bin_matrix_movie_taps = bin_matrix_movie_taps;
+        binned_SWs.(participant_id).bin_matrix_phone_taps = bin_matrix_phone_taps;
 
         fprintf('\nParticipant %s processed.\n', participant_id);
     end

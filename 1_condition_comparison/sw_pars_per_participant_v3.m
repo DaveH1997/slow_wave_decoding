@@ -75,9 +75,6 @@ if ~use_summary_file
     % Initialize participant counter for logging stop condition
     participant_counter = 0;
 
-    % Define target duration for each condition (60 minutes in ms)
-    target_duration = 3600000;  % 3,600,000 ms
-
     % Get list of all .mat files in the specified data path
     file_list = dir(fullfile(data_path, '*.mat'));
     total_files = length(file_list);
@@ -151,7 +148,16 @@ if ~use_summary_file
                 continue;
             end
             
-            % Build participant summary object, extract 'top10_filtered_results' and add it
+            % Build participant summary object and add checkpoint file name to it
+            participant_data.checkpoint_filename = file_name;
+
+            % Add file name of EEG recording to the participant summary object
+            participant_data.eeg_filename = R{row,2}.filename;
+
+            % Add file path of EEG recording to the participant summary object
+            participant_data.eeg_filepath = R{row,2}.filepath;
+
+            % Extract 'top10_filtered_results' and add it to the participant summary object
             participant_data.top10_filtered_results = R{row,4};
 
             % Add smartphone tap latencies to the participant summary object
@@ -212,24 +218,33 @@ if ~use_summary_file
             movie_length = participant_data.movie_end - participant_data.movie_start;
             phone_length = participant_data.phone_end - participant_data.phone_start;
 
-            % Compute total deviation from target condition duration
-            total_deviation = abs(movie_length - target_duration) + abs(phone_length - target_duration);
-
-            % Store the total deviation in the participant summary object (for later comparison)
-            participant_data.total_deviation = total_deviation;
+            % Skip if movie longer than 80 min (4 800 000 ms)
+            if movie_length >= 4800000
+                fprintf('\nSkipping participant %s due to excessive movie length.\n', pid);
+                continue;
+            end
+            
+            % Skip if phone shorter than 15 min (900 000 ms)
+            if phone_length < 900000
+                fprintf('\nSkipping participant %s due to short phone length.\n', pid);
+                continue;
+            end
+            
+            % Store phone_length for selection
+            participant_data.phone_length = phone_length;
             
             % If this participant does not already exists in 'top10_SWs', add their summary object
             if ~isfield(top10_SWs, pid)
+                % First valid occurrence wins
                 top10_SWs.(pid) = participant_data;
-                fprintf('\nStored data for participant %s with total deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
-            % If this participant already exists in 'top10_SWs', compare total condition duration deviation
+                fprintf('\nStored data for participant %s with phone length %.1f min.\n', pid, phone_length/1000/60);
             else
-                % If the new occurrence has a lower total condition duration deviation, update the record
-                if participant_data.total_deviation < top10_SWs.(pid).total_deviation
+                % Otherwise keep the one with the longer phone condition
+                if participant_data.phone_length > top10_SWs.(pid).phone_length
                     top10_SWs.(pid) = participant_data;
-                    fprintf('\nUpdated data for participant %s with total condition duration deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
+                    fprintf('\nUpdated data for participant %s with longer phone length %.1f min.\n', pid, phone_length/1000/60);
                 else
-                    fprintf('\nDiscarded data for participant %s with total condition duration deviation %.1f min.\n', pid, participant_data.total_deviation / 1000 / 60);
+                    fprintf('\nDiscarded data for participant %s with phone length %.1f min.\n', pid, phone_length/1000/60);
                 end
             end
             
